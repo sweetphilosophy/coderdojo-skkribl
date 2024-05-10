@@ -1,0 +1,13 @@
+<div>
+  <div *ngFor="let message of messages">
+    <span>{{ message.username }}:</span>
+    <span>
+      {{ message.message }}
+    </span>
+  </div>
+
+  <div>
+    <input [(ngModel)]="message" (keydown.enter)="sendMessage()" />
+    <button (click)="sendMessage()">></button>
+  </div>
+</div>

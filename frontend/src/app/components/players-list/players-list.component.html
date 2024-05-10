@@ -1,0 +1,8 @@
+<button *ngIf="isCurrentPlayerGameMaster" (click)="startGame()">
+  Start game
+</button>
+<div *ngFor="let player of players">
+  <span>{{ player.name }}</span>
+  <br />
+  <span>{{ player.score }}</span>
+</div>
