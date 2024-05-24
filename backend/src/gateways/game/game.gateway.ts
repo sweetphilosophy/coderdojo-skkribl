@@ -173,10 +173,18 @@ export class GameGateway
   handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
 
+    const disconnectedUsername = this.gameState.players.find(
+      (p) => p.id === client.id,
+    )?.name;
+
     this.gameState.players = this.gameState.players.filter(
       (p) => p.id !== client.id,
     );
     this.server.emit('playerListUpdate', this.gameState.players);
+    this.server.emit('chatMessage', {
+      username: this.SYSTEM_USERNAME,
+      message: `${disconnectedUsername} has disconnected!`,
+    });
   }
 
   @SubscribeMessage('draw')
