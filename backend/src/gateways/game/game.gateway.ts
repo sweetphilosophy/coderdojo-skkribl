@@ -4,6 +4,9 @@ import {
   WebSocketServer,
   ConnectedSocket,
   MessageBody,
+  OnGatewayDisconnect,
+  OnGatewayConnection,
+  OnGatewayInit,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
@@ -126,7 +129,9 @@ interface DrawingLine {
     origin: '*',
   },
 })
-export class GameGateway {
+export class GameGateway
+  implements OnGatewayDisconnect, OnGatewayConnection, OnGatewayInit
+{
   @WebSocketServer()
   server: Server;
 
@@ -150,12 +155,29 @@ export class GameGateway {
           console.log('nu se joaca');
         }
       }
-    }, 1000);
+    }, 10000);
   }
 
   // gameLoop() {
 
   // }
+
+  afterInit() {
+    console.log('Initialized successfully');
+  }
+
+  handleConnection(@ConnectedSocket() client: Socket) {
+    console.log(`Client connected: ${client.id}`);
+  }
+
+  handleDisconnect(@ConnectedSocket() client: Socket) {
+    console.log(`Client disconnected: ${client.id}`);
+
+    this.gameState.players = this.gameState.players.filter(
+      (p) => p.id !== client.id,
+    );
+    this.server.emit('playerListUpdate', this.gameState.players);
+  }
 
   @SubscribeMessage('draw')
   handleDrawLine(@MessageBody() line: DrawingLine) {
