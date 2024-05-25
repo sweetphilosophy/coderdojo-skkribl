@@ -7,7 +7,7 @@ import { ChatMessage, DrawingLine, Player } from '../types';
   providedIn: 'root',
 })
 export class SocketService {
-  private url: string = 'http://192.168.115.110:3000/';
+  private url: string = 'http://86.123.77.123:3000/';
   private socket;
 
   constructor() {
