@@ -4,7 +4,9 @@
 
 <ol class="pllist">
   <li *ngFor="let player of players" class="pllist-item">
-    <span class="playername">{{ player.name }}</span>
+    <span class="playername">
+      <span *ngIf="player.gameMaster">👑</span>
+      {{ player.name }}</span>
     <br />
     <br />
     <span class="playerscore">{{ player.score }}</span>
