@@ -20,9 +20,6 @@ import { GameContainerComponent } from './components/game-container/game-contain
   styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit {
-  title(title: any) {
-    throw new Error('Method not implemented.');
-  }
   username: string = '';
 
   constructor(private userService: UserService) {}

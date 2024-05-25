@@ -24,7 +24,6 @@ export class GameCanvasComponent implements OnInit {
   private canvas!: ElementRef<HTMLCanvasElement>;
 
   private isDrawing = false;
-  isTurn: boolean = false;
 
   constructor(private socketService: SocketService) {}
 
@@ -46,10 +45,10 @@ export class GameCanvasComponent implements OnInit {
       this.context.strokeStyle = line.color;
       this.context.stroke();
     }
-}
+  }
+
   @HostListener('mousedown', ['$event'])
   onMouseDown(e: MouseEvent) {
-    if(!this.isTurn) return;
     this.isDrawing = true;
     const currentLine: DrawingLine = {
       x: e.offsetX,
@@ -63,7 +62,7 @@ export class GameCanvasComponent implements OnInit {
 
   @HostListener('mousemove', ['$event'])
   onMouseMove(e: MouseEvent) {
-    if (!this.isDrawing || !this.isTurn) return;
+    if (!this.isDrawing) return;
 
     const currentLine: DrawingLine = {
       x: e.offsetX,
@@ -78,7 +77,6 @@ export class GameCanvasComponent implements OnInit {
   @HostListener('mouseup')
   @HostListener('mouseout')
   onMouseUp(e: MouseEvent) {
-    if (!this.isDrawing || !this.isTurn) return;
     this.isDrawing = false;
   }
 }

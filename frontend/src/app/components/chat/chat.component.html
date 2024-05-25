@@ -7,7 +7,9 @@
   </div>
 
   <div>
-    <input [(ngModel)]="message" (keydown.enter)="sendMessage()" />
-    <button (click)="sendMessage()">Send</button>
+    <input [(ngModel)]="message" (keydown.enter)="sendMessage()" style="height: 30px;position: absolute"/>
+    <button mat-icon-button matTooltip="Warn" color="warn" (click)="sendMessage()" style="height: 35px;position: absolute;">
+      <mat-icon>sendMessage</mat-icon>
+    </button>
   </div>
 </div>
