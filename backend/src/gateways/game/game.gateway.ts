@@ -147,12 +147,12 @@ export class GameGateway
 
   constructor() {
     setInterval(() => {
-      console.log(this.gameState);
+      // console.log(this.gameState);
       if (this.gameState) {
         if (this.gameState.phase === 'playing') {
-          console.log('se joaca');
+          // console.log('se joaca');
         } else if (this.gameState.phase === 'over') {
-          console.log('nu se joaca');
+          // console.log('nu se joaca');
         }
       }
     }, 10000);
