@@ -4,6 +4,7 @@
     [(ngModel)]="username"
     placeholder="Enter your username"
     required
+    (keydown.enter)="joinGame()"
   />
   <button (click)="joinGame()">Join Game</button>
 </div>
