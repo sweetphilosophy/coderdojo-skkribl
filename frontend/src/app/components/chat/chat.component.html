@@ -1,5 +1,5 @@
 <div>
-  <div *ngFor="let message of messages">
+  <div *ngFor="let message of messages" [ngClass]="{'system-message': message.username === 'SYSTEM'}">
     <span>{{ message.username }}:</span>
     <span>
       {{ message.message }}
@@ -8,6 +8,6 @@
 
   <div>
     <input [(ngModel)]="message" (keydown.enter)="sendMessage()" />
-    <button (click)="sendMessage()">></button>
+    <button (click)="sendMessage()">Send</button>
   </div>
 </div>
