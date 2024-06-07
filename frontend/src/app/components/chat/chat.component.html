@@ -7,9 +7,10 @@
   </div>
 
   <div>
-    <input [(ngModel)]="message" (keydown.enter)="sendMessage()" style="height: 30px;position: absolute"/>
-    <button mat-icon-button matTooltip="Warn" color="warn" (click)="sendMessage()" style="height: 35px;position: absolute;">
+    <input [(ngModel)]="message" (keydown.enter)="sendMessage()" style="height: 30px;"/>
+    <button mat-icon-button matTooltip="Warn" color="warn" (click)="sendMessage()" >
       <mat-icon>sendMessage</mat-icon>
+      <link rel="stylesheet" href="/frontend/src/app/components/chat/chat.component.css">
     </button>
   </div>
 </div>
