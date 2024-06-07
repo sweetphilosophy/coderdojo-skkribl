@@ -143,24 +143,54 @@ export class GameGateway
     phase: 'over',
   };
 
-  SYSTEM_USERNAME = 'SYSTEM';
+  private SYSTEM_USERNAME = 'SYSTEM';
+
+  private roundTimerInterval: NodeJS.Timeout | undefined;
+  private roundTime: number = 60; // 60 seconds per round
+  private currentRoundTime: number = 0;
 
   constructor() {
     setInterval(() => {
-      // console.log(this.gameState);
-      if (this.gameState) {
-        if (this.gameState.phase === 'playing') {
-          // console.log('se joaca');
-        } else if (this.gameState.phase === 'over') {
-          // console.log('nu se joaca');
-        }
+      if (this.gameState.phase === 'playing' && !this.roundTimerInterval) {
+        this.startRoundTimer();
       }
-    }, 10000);
+    }, 1000);
   }
 
-  // gameLoop() {
+  private startRoundTimer() {
+    this.currentRoundTime = this.roundTime;
+    this.roundTimerInterval = setInterval(() => {
+      this.roundLoop();
+    }, 1000);
+  }
 
-  // }
+  private roundLoop() {
+    console.log(this.gameState);
+    this.currentRoundTime--;
+    this.server.emit('roundTimerUpdate', this.currentRoundTime);
+
+    if (this.currentRoundTime <= 0) {
+      this.endRound();
+    }
+  }
+
+  private endRound() {
+    if (this.roundTimerInterval) {
+      clearInterval(this.roundTimerInterval);
+      this.roundTimerInterval = undefined;
+    }
+
+    this.server.emit('roundEnd', this.gameState.currentWord);
+
+    // Update game state and proceed to the next round
+    this.gameState.drawerIndex =
+      (this.gameState.drawerIndex + 1) % this.gameState.players.length;
+    this.pickNewWord();
+    this.setGamePhase('playing');
+
+    this.server.emit('gameState', this.gameState);
+    this.startRoundTimer();
+  }
 
   afterInit() {
     console.log('Initialized successfully');
@@ -203,6 +233,8 @@ export class GameGateway
       name: username,
       score: 0,
       gameMaster: this.gameState.players.length === 0,
+      phase:
+        this.gameState.players.length === 0 ? Phases.DRAWING : Phases.GUESSING,
     };
     this.gameState.players.push(newPlayer);
     client.emit('gameState', this.gameState);
@@ -218,37 +250,59 @@ export class GameGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() message: string,
   ): void {
-    const username = this.gameState.players.find(
-      (p) => p.id === client.id,
-    ).name;
-    if (username) {
-      console.log(`New Message: ${username} - ${message}`);
+    // const username = this.gameState.players.find(
+    //   (p) => p.id === client.id,
+    // ).name;
+    // if (username) {
+    //   console.log(`New Message: ${username} - ${message}`);
 
-      // handle guess here as the guesses are sent through the chat
-      this.server.emit('chatMessage', { username, message });
+    //   // handle guess here as the guesses are sent through the chat
+    //   this.server.emit('chatMessage', { username, message });
+    // }
+
+    const player = this.gameState.players.find((p) => p.id === client.id);
+    if (player) {
+      console.log(`New Message: ${player.name} - ${message}`);
+
+      if (
+        this.gameState.phase === 'playing' &&
+        player.phase === Phases.GUESSING &&
+        message.toLowerCase() === this.gameState.currentWord.toLowerCase()
+      ) {
+        player.score += 100; // Award points for correct guess
+        this.server.emit('chatMessage', {
+          username: this.SYSTEM_USERNAME,
+          message: `${player.name} guessed the word!`,
+        });
+        // this.endRound(); // End round if someone guesses the word
+      } else {
+        this.server.emit('chatMessage', { username: player.name, message });
+      }
     }
   }
 
   @SubscribeMessage('startGame')
   handleStartGame(): void {
-    this.pickNewWord();
+    if (this.gameState.players.length > 1) {
+      this.pickNewWord();
 
-    this.setGamePhase('playing');
+      this.setGamePhase('playing');
 
-    this.server.emit('gameState', this.gameState);
+      this.server.emit('gameState', this.gameState);
+      this.startRoundTimer();
+    } else {
+      this.server.emit('chatMessage', {
+        username: this.SYSTEM_USERNAME,
+        message: 'Not enough players to start the game.',
+      });
+    }
   }
 
   @SubscribeMessage('makeGuess')
   handleMakeGuess(
     @ConnectedSocket() client: Socket,
     @MessageBody() guess: string,
-  ): void {
-    // if (this.gameState.phase === 'guessing') {
-    //   this.gameState.guesses[client.id] = guess;
-    //   // this.checkGuess(guess); // Method to check the correctness of the guess
-    //   this.server.emit('gameState', this.gameState);
-    // }
-  }
+  ): void {}
 
   private setGamePhase(phase: 'playing' | 'over') {
     this.gameState.phase = phase;
@@ -258,12 +312,4 @@ export class GameGateway
     this.gameState.currentWord =
       WORDS_LIST[Math.floor(Math.random() * WORDS_LIST.length)];
   }
-
-  // private checkGuess(guess: string) {
-  //   // Implement logic to check the guess and update scores
-  //   if (guess.toLowerCase() === this.gameState.currentWord.toLowerCase()) {
-  //     this.gameState.players.find((p) => p.id === guess.id).score += 10;
-  //     this.gameState.phase = 'between rounds';
-  //   }
-  // }
 }
